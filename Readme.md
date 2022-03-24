@@ -18,4 +18,4 @@
 
 ## Логирование
 По умолчанию логирование включенно в режиме debug, для изменения этого необходимо в файле logger.ini в разделе [logger_plogger]
-level=DEBUG, заменить DEBUG на CRITICAL
+level=DEBUG, заменить DEBUG на ERROR

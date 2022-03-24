@@ -60,10 +60,14 @@ if __name__ == "__main__":
     except Exception as e:
         logger.error('Подключение к Exchange')
     else:
+        logger.info('Подключение к серверу состоялось')
         bot = telebot.TeleBot(token=tg_config_dict['token'])
         for item in acc.inbox.all().filter(is_read=False).only('subject', 'text_body'):
-            s = item.subject
-            b = item.text_body
-            bot.send_message(tg_config_dict['group_id'], s + '\n' + b)
+            subject = item.subject
+            body = item.text_body
+            try:
+                bot.send_message(tg_config_dict['group_id'], subject + '\n' + body)
+            except Exception as e:
+                logger.error('Отправка сообщений в телеграмм состоялась.')
             item.is_read = True
             item.save(update_fields=['is_read'])
