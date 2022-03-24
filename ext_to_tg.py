@@ -48,10 +48,11 @@ def connection(username: str, password: str, server: str):
 
 
 if __name__ == "__main__":
-    tg_config_dict = get_config(config_path, 'TG')
-    bot = telebot.TeleBot(token=tg_config_dict['token'])
+    owa_config_dict = {}
+    tg_config_dict = {}
     try:
         owa_config_dict = get_config(config_path, 'OWA')
+        tg_config_dict = get_config(config_path, 'TG')
     except Exception as e:
         logger.error('Получение параметров конфигурации')
     try:
@@ -59,10 +60,10 @@ if __name__ == "__main__":
     except Exception as e:
         logger.error('Подключение к Exchange')
     else:
+        bot = telebot.TeleBot(token=tg_config_dict['token'])
         for item in acc.inbox.all().filter(is_read=False).only('subject', 'text_body'):
             s = item.subject
             b = item.text_body
             bot.send_message(tg_config_dict['group_id'], s + '\n' + b)
             item.is_read = True
             item.save(update_fields=['is_read'])
-            print('-------------------------')
