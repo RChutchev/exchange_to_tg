@@ -1,4 +1,4 @@
-# Почта из OWA Exchange в telegramm (только непрочитанные сообщения)
+# Почта из OWA Exchange в telegramm (только непрочитанные сообщения из inbox)
 
 ## Установка
 - git clone https://github.com/twmd/exchange_to_tg
