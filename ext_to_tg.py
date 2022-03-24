@@ -32,7 +32,7 @@ def get_config(config_path: str, section: str) -> dict:
     try:
         config.read(config_path)
     except Exception as e:
-        logger.error('Чтение файла конфигурации')
+        logger.exception('Чтение файла конфигурации')
     logger.info('Фаил конфигурации прочитан')
     return dict(config.items(section))
 
@@ -56,12 +56,12 @@ if __name__ == "__main__":
         owa_config_dict = get_config(config_path, 'OWA')
         tg_config_dict = get_config(config_path, 'TG')
     except Exception as e:
-        logger.error('Получение параметров конфигурации')
+        logger.exception('Получение параметров конфигурации')
     try:
         acc = connection(owa_config_dict['username'], owa_config_dict['password'], owa_config_dict['server'],
                          owa_config_dict['email'])
     except Exception as e:
-        logger.error('Подключение к Exchange')
+        logger.exception('Подключение к Exchange')
     else:
         logger.info('Подключение к серверу состоялось')
         bot = telebot.TeleBot(token=tg_config_dict['token'])
@@ -71,7 +71,7 @@ if __name__ == "__main__":
             try:
                 bot.send_message(tg_config_dict['group_id'], subject + '\n' + body)
             except Exception as e:
-                logger.error('Отправка сообщений в телеграмм состоялась.')
+                logger.exception('Отправка сообщений в телеграмм состоялась.')
             item.is_read = True
             item.save(update_fields=['is_read'])
         else:
