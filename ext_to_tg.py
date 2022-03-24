@@ -10,6 +10,7 @@ import telebot
 
 config_path = os.path.join(os.getcwd(), 'setting.ini')
 
+
 # Логирование
 def get_logger():
     logging.config.fileConfig(os.path.join(os.getcwd(), 'logger.ini'), disable_existing_loggers=False)
@@ -18,6 +19,7 @@ def get_logger():
 
 
 logger = get_logger()
+
 
 def get_config(config_path: str, section: str) -> dict:
     """
@@ -35,12 +37,12 @@ def get_config(config_path: str, section: str) -> dict:
     return dict(config.items(section))
 
 
-#Подключение к серверу
-def connection(username: str, password: str, server: str):
+# Подключение к серверу
+def connection(username: str, password: str, server: str, email):
     credentials = Credentials(username=username, password=password)
     config = Configuration(server=server, credentials=credentials)
     return Account(
-        primary_smtp_address='v.sazanov@csbi-it.ru',
+        primary_smtp_address=email,
         config=config,
         autodiscover=False,
         access_type=DELEGATE,
@@ -56,7 +58,8 @@ if __name__ == "__main__":
     except Exception as e:
         logger.error('Получение параметров конфигурации')
     try:
-        acc = connection(owa_config_dict['username'], owa_config_dict['password'], owa_config_dict['server'])
+        acc = connection(owa_config_dict['username'], owa_config_dict['password'], owa_config_dict['server'],
+                         owa_config_dict['email'])
     except Exception as e:
         logger.error('Подключение к Exchange')
     else:
@@ -71,3 +74,5 @@ if __name__ == "__main__":
                 logger.error('Отправка сообщений в телеграмм состоялась.')
             item.is_read = True
             item.save(update_fields=['is_read'])
+        else:
+            logger.info('Новых сообщений не было')
