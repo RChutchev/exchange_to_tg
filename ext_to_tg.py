@@ -58,7 +58,9 @@ def send_tg_msg(token, group_id, messages):
     else:
         logger.info('Сообщение в телеграм отправленно')
 
-def get_unread_msg(config):
+#Чтение сообщения из почты папка inbox
+def get_unread_msg(config, make_read=True):
+    #TODO: Подумать как передавать папку
     try:
         acc = connection(config['username'], config['password'], config['server'],
                              config['email'])
@@ -69,9 +71,10 @@ def get_unread_msg(config):
             subject = item.subject
             body = item.text_body
             send_tg_msg(tg_config_dict['token'], tg_config_dict['group_id'], subject + '\n' + body)
-            item.is_read = True
+            #Помечаем сообщение как прочитанное
+            item.is_read = True if make_read else False
             item.save(update_fields=['is_read'])
-            logger.info('get_unread_msg отработала')
+            logger.info('отработала')
 
 if __name__ == "__main__":
     try:
