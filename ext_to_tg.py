@@ -59,18 +59,18 @@ def send_tg_msg(token, group_id, messages):
         logger.info('Сообщение в телеграм отправленно')
 
 #Чтение сообщения из почты папка inbox
-def get_unread_msg(config, make_read=True):
+def get_unread_msg(owa_config, tg_config, make_read=True):
     #TODO: Подумать как передавать папку
     try:
-        acc = connection(config['username'], config['password'], config['server'],
-                             config['email'])
+        acc = connection(owa_config['username'], owa_config['password'], owa_config['server'],
+                         owa_config['email'])
     except Exception as e:
         logger.exception('get_unread_msg чтение сообщений почтового ящика')
     else:
         for item in acc.inbox.all().filter(is_read=False).only('subject', 'text_body'):
             subject = item.subject
             body = item.text_body
-            send_tg_msg(tg_config_dict['token'], tg_config_dict['group_id'], subject + '\n' + body)
+            send_tg_msg(tg_config['token'], tg_config['group_id'], subject + '\n' + body)
             #Помечаем сообщение как прочитанное
             item.is_read = True if make_read else False
             item.save(update_fields=['is_read'])
@@ -83,4 +83,4 @@ if __name__ == "__main__":
     except Exception as e:
         logger.exception('Получение параметров конфигурации')
     else:
-        get_unread_msg(owa_config_dict)
+        get_unread_msg(owa_config_dict, tg_config_dict)
