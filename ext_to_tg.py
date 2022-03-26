@@ -47,36 +47,37 @@ def connection(username: str, password: str, server: str, email):
         autodiscover=False,
         access_type=DELEGATE,
     )
-
-def send_tg_messages(token ,group_id, messages):
+#Отсылка сообщения в телеграмм
+def send_tg_msg(token, group_id, messages):
+    #TODO: Перенести сюда сразу словарь конфигурации
     try:
         bot = telebot.TeleBot(token=token)
         bot.send_message(group_id, messages)
     except Exception as e:
-        logger.exception('Отсылка сообщений в телеграмм')
+        logger.exception('send_tg_msg Отсылка сообщений в телеграмм')
     else:
         logger.info('Сообщение в телеграм отправленно')
 
+def get_unread_msg(config):
+    try:
+        acc = connection(config['username'], config['password'], config['server'],
+                             config['email'])
+    except Exception as e:
+        logger.exception('get_unread_msg чтение сообщений почтового ящика')
+    else:
+        for item in acc.inbox.all().filter(is_read=False).only('subject', 'text_body'):
+            subject = item.subject
+            body = item.text_body
+            send_tg_msg(tg_config_dict['token'], tg_config_dict['group_id'], subject + '\n' + body)
+            item.is_read = True
+            item.save(update_fields=['is_read'])
+            logger.info('get_unread_msg отработала')
+
 if __name__ == "__main__":
-    owa_config_dict = {}
-    tg_config_dict = {}
     try:
         owa_config_dict = get_config(config_path, 'OWA')
         tg_config_dict = get_config(config_path, 'TG')
     except Exception as e:
         logger.exception('Получение параметров конфигурации')
-    try:
-        acc = connection(owa_config_dict['username'], owa_config_dict['password'], owa_config_dict['server'],
-                         owa_config_dict['email'])
-    except Exception as e:
-        logger.exception('Подключение к Exchange')
     else:
-        logger.info('Подключение к серверу состоялось')
-        for item in acc.inbox.all().filter(is_read=False).only('subject', 'text_body'):
-            subject = item.subject
-            body = item.text_body
-            send_tg_messages(tg_config_dict['token'], tg_config_dict['group_id'], subject + '\n' + body)
-            item.is_read = True
-            item.save(update_fields=['is_read'])
-        else:
-            logger.info('Новых сообщений не было')
+        get_unread_msg(owa_config_dict)
