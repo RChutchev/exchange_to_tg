@@ -48,6 +48,14 @@ def connection(username: str, password: str, server: str, email):
         access_type=DELEGATE,
     )
 
+def send_tg_messages(token ,group_id, messages):
+    try:
+        bot = telebot.TeleBot(token=token)
+        bot.send_message(group_id, messages)
+    except Exception as e:
+        logger.exception('Отсылка сообщений в телеграмм')
+    else:
+        logger.info('Сообщение в телеграм отправленно')
 
 if __name__ == "__main__":
     owa_config_dict = {}
@@ -64,14 +72,10 @@ if __name__ == "__main__":
         logger.exception('Подключение к Exchange')
     else:
         logger.info('Подключение к серверу состоялось')
-        bot = telebot.TeleBot(token=tg_config_dict['token'])
         for item in acc.inbox.all().filter(is_read=False).only('subject', 'text_body'):
             subject = item.subject
             body = item.text_body
-            try:
-                bot.send_message(tg_config_dict['group_id'], subject + '\n' + body)
-            except Exception as e:
-                logger.exception('Отправка сообщений в телеграмм состоялась.')
+            send_tg_messages(tg_config_dict['token'], tg_config_dict['group_id'], subject + '\n' + body)
             item.is_read = True
             item.save(update_fields=['is_read'])
         else:
